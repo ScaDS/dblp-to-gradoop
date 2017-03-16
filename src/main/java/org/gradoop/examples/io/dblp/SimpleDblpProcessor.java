@@ -26,7 +26,7 @@ public class SimpleDblpProcessor implements DblpElementProcessor {
         DblpElementConverter conv = dblpElement.getType().getConverter();
         elementList.add(conv.convertEssentials(dblpElement));
 
-        if(elementList.size() >= maxElementsToParse) {
+        if(maxElementsToParse != 0 && elementList.size() >= maxElementsToParse) {
             throw new ParsingTerminationException();
         }
     }
