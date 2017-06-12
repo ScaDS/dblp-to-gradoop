@@ -49,7 +49,10 @@ public class DblpToGradoop {
             for (String author : dblpElement.authors) {
                 if (!vertices.containsKey(author)) {
                     // create author vertex if not existing
-                    ImportVertex<String> authorVertex = new ImportVertex<>(author, LABEL_AUTHOR);
+                    Properties authorProps = new Properties();
+                    authorProps.set("name", author);
+
+                    ImportVertex<String> authorVertex = new ImportVertex<>(author, LABEL_AUTHOR, authorProps);
                     vertices.put(author, authorVertex);
                 }
 
