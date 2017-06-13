@@ -2,24 +2,18 @@ package org.gradoop.examples.io.dblp;
 
 import com.koloboke.collect.map.hash.HashObjObjMap;
 import com.koloboke.collect.map.hash.HashObjObjMaps;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.ExecutionEnvironment;
 import org.dblp.datastructures.DblpElement;
 import org.dblp.parser.DblpParser;
 import org.gradoop.common.model.impl.properties.Properties;
-import org.gradoop.flink.io.api.DataSink;
-import org.gradoop.flink.io.api.DataSource;
-import org.gradoop.flink.io.impl.graph.GraphDataSource;
+import org.gradoop.examples.io.dblp.callback.SimpleDblpProcessor;
 import org.gradoop.flink.io.impl.graph.tuples.ImportEdge;
 import org.gradoop.flink.io.impl.graph.tuples.ImportVertex;
-import org.gradoop.flink.io.impl.json.JSONDataSink;
-import org.gradoop.flink.model.impl.LogicalGraph;
-import org.gradoop.flink.util.GradoopFlinkConfig;
 
 import java.util.List;
 
-public class DblpToGradoop {
+public class SimpleGraph {
     private final String LABEL_AUTHOR = "author";
+    private final String LABEL_AUTHOR_NAME = "name";
 
     private HashObjObjMap<String, ImportVertex> vertices = HashObjObjMaps.newMutableMap();
     private HashObjObjMap<String, ImportEdge> edges = HashObjObjMaps.newMutableMap();
@@ -50,7 +44,7 @@ public class DblpToGradoop {
                 if (!vertices.containsKey(author)) {
                     // create author vertex if not existing
                     Properties authorProps = new Properties();
-                    authorProps.set("name", author);
+                    authorProps.set(LABEL_AUTHOR_NAME, author);
 
                     ImportVertex<String> authorVertex = new ImportVertex<>(author, LABEL_AUTHOR, authorProps);
                     vertices.put(author, authorVertex);
@@ -72,30 +66,7 @@ public class DblpToGradoop {
     }
 
     private void writeGraph(String graphHeadPath, String vertexPath, String edgePath) throws Exception {
-        // translate to flink datastructures
-        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-
-        // create default Gradoop config
-        GradoopFlinkConfig config = GradoopFlinkConfig.createConfig(env);
-
-        System.out.println("Vertices: " + vertices.size());
-        System.out.println("Edges   : " + edges.size());
-
-        DataSet<ImportVertex> v = env.fromCollection(vertices.values());
-        DataSet<ImportEdge> e = env.fromCollection(edges.values());
-
-        DataSource gds = new GraphDataSource(v, e, config);
-
-        // read logical graph
-        LogicalGraph logicalGraph = gds.getLogicalGraph();
-
-//        DataSink ds1 = new DOTDataSink("/home/kricke/IdeaProjects/asd.dot", true);
-//        ds1.write(logicalGraph);
-
-        DataSink ds = new JSONDataSink(graphHeadPath, vertexPath, edgePath, config);
-        ds.write(logicalGraph);
-
-        env.execute();
+        GraphCreationHelper.writeGraph(vertices, edges, graphHeadPath, vertexPath, edgePath);
     }
 
 
@@ -108,7 +79,7 @@ public class DblpToGradoop {
 
 
         // get data from dblp xml file
-        DblpToGradoop dblp = new DblpToGradoop();
+        SimpleGraph dblp = new SimpleGraph();
         List<DblpElement> dblpElements = dblp.parseData(args[0], Long.parseLong(args[1]));
 
         System.out.println("Dblp Elements: " + dblpElements.size());
