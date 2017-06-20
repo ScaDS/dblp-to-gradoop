@@ -4,34 +4,28 @@ import com.koloboke.collect.map.hash.HashObjObjMap;
 import com.koloboke.collect.map.hash.HashObjObjMaps;
 import org.dblp.datastructures.DblpElement;
 import org.dblp.datastructures.DblpElementType;
-import org.dblp.parser.DblpElementProcessor;
 import org.dblp.parser.DblpParser;
+import org.gradoop.common.model.impl.properties.*;
 import org.gradoop.common.model.impl.properties.Properties;
 import org.gradoop.examples.io.dblp.callback.FilterDblpProcessor;
-import org.gradoop.examples.io.dblp.callback.SimpleDblpProcessor;
 import org.gradoop.flink.io.impl.graph.tuples.ImportEdge;
 import org.gradoop.flink.io.impl.graph.tuples.ImportVertex;
 
 import java.util.*;
 
+
 /**
- * Beside the ordinary graph structure which connects a publication with it's authors, this graph contains
- * the co-author relations. The graph is build by using INPROCEEDINGS and possibly only a set of predefined conferences.
+ * Creates a graph based on a given author with all his co-authors and publications in DBLP.
  */
-public class InprocCoAuthorGraph {
-    private final String LABEL_AUTHOR = "author";
-    private final String LABEL_AUTHOR_NAME = "name";
-    private final String EDGE_LABEL_COAUTHOR = "coauthor";
-    private final String EDGE_LABEL_AUTHOR = "authorof";
-    private final String EDGE_PROPERTY_COLABS = "colaborations";
+public class AuthorCoAuthorGraph {
 
     private HashObjObjMap<String, ImportVertex> vertices = HashObjObjMaps.newMutableMap();
     private HashObjObjMap<String, ImportEdge> edges = HashObjObjMaps.newMutableMap();
 
-    private List<DblpElement> parseData(String uri, long numElements, List<String> conferences) {
+    private List<DblpElement> parseData(String uri, List<String> authors) {
 
         FilterDblpProcessor processor =
-                new FilterDblpProcessor(numElements, "booktitle", conferences, EnumSet.of(DblpElementType.INPROCEEDINGS), false);
+                new FilterDblpProcessor(0, "author", authors, EnumSet.allOf(DblpElementType.class), true);
         DblpParser.load(processor, uri);
 
         return processor.getElementList();
@@ -54,9 +48,11 @@ public class InprocCoAuthorGraph {
             // create all author vertices that do not exist yet
             for (String author : dblpElement.authors) {
                 if (!vertices.containsKey(author)) {
-                    Properties authorProps = new Properties();
+                    org.gradoop.common.model.impl.properties.Properties authorProps = new org.gradoop.common.model.impl.properties.Properties();
+                    String LABEL_AUTHOR_NAME = "name";
                     authorProps.set(LABEL_AUTHOR_NAME, author);
 
+                    String LABEL_AUTHOR = "author";
                     ImportVertex<String> authorVertex = new ImportVertex<>(author, LABEL_AUTHOR, authorProps);
                     vertices.put(author, authorVertex);
                 }
@@ -70,10 +66,12 @@ public class InprocCoAuthorGraph {
                         continue;
                     }
                     String edgeKey = author + "|" + author2;
+                    String EDGE_PROPERTY_COLABS = "collaborations";
                     if(!edges.containsKey(edgeKey)) {
-                        Properties authorProps = new Properties();
+                        org.gradoop.common.model.impl.properties.Properties authorProps = new org.gradoop.common.model.impl.properties.Properties();
                         authorProps.set(EDGE_PROPERTY_COLABS, 1);
                         authorProps.set("connected_authors", author + "|" + author2);
+                        String EDGE_LABEL_COAUTHOR = "coauthor";
                         ImportEdge<String> coAuthorEdge = new ImportEdge<>(edgeKey, author, author2, EDGE_LABEL_COAUTHOR, authorProps);
                         edges.put(edgeKey, coAuthorEdge);
                     } else {
@@ -85,42 +83,37 @@ public class InprocCoAuthorGraph {
 
                 // add edges between author and publication
                 String edgeKey = author + "|" + dblpElement.key;
+                String EDGE_LABEL_AUTHOR = "authorof";
                 ImportEdge<String> edge = new ImportEdge<>(edgeKey, author, dblpElement.key, EDGE_LABEL_AUTHOR);
                 edges.put(edgeKey, edge);
             }
         }
     }
 
-
-    private void writeGraph(String graphHeadPath, String vertexPath, String edgePath) throws Exception {
-        GraphCreationHelper.writeGraph(vertices, edges, graphHeadPath, vertexPath, edgePath);
+    private void writeGraph(String outputPath) throws Exception {
+        GraphCreationHelper.writeGraph(vertices, edges, outputPath + "graphHead",outputPath + "vertices", outputPath + "edges");
     }
 
     public static void main(String[] args) throws Exception {
-
-        if (args.length < 5) {
+        if (args.length < 3) {
             System.out.println(
-                    "Parameters: PathToDblpFile NumElementsToParse OutputPath_Head OutputPath_Vertices OutputPath_Edges "
-                    + "[Conference List (substring check)]");
-            System.out.println("If NumElements is set to '0', all elements are parsed.");
-            System.out.println("If no Conferences are stated all are parsed.");
+                    "Parameters: PathToDblpFile OutputFolder [Author List (substring check)]");
+            System.out.println("At least one Author has to be stated.");
             System.exit(0);
         }
 
-        List<String> conferences = new ArrayList<>();
-        if(args.length > 5) {
-            Collections.addAll(conferences, Arrays.copyOfRange(args, 5, args.length));
-        }
-        System.out.println("Conferences: " + conferences);
+        List<String> authors = new ArrayList<>();
+        Collections.addAll(authors, Arrays.copyOfRange(args, 2, args.length));
+        System.out.println("Authors: " + authors);
 
         // get data from dblp xml file
-        InprocCoAuthorGraph graphCreator = new InprocCoAuthorGraph();
-        List<DblpElement> dblpElements = graphCreator.parseData(args[0], Long.parseLong(args[1]), conferences);
+        AuthorCoAuthorGraph graphCreator = new AuthorCoAuthorGraph();
+        List<DblpElement> dblpElements = graphCreator.parseData(args[0], authors);
 
         System.out.println("Dblp Elements: " + dblpElements.size());
 
         // filter data which we don't want to add, e.g. no authors included etc.
         dblpElements.forEach(graphCreator::createGraphStructure);
-        graphCreator.writeGraph(args[2], args[3], args[4]);
+        graphCreator.writeGraph(args[1]);
     }
 }

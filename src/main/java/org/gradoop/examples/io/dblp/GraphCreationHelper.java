@@ -36,7 +36,7 @@ public class GraphCreationHelper {
         LogicalGraph logicalGraph = gds.getLogicalGraph();
 
         DataSink ds = new JSONDataSink(graphHeadPath, vertexPath, edgePath, config);
-        ds.write(logicalGraph);
+        ds.write(logicalGraph, true);
 
         env.execute();
     }
