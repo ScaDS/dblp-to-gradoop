@@ -19,6 +19,8 @@ import java.util.*;
  */
 public class AuthorCoAuthorGraph {
 
+    private final String PROP_TITLE = "title";
+
     private HashObjObjMap<String, ImportVertex> vertices = HashObjObjMaps.newMutableMap();
     private HashObjObjMap<String, ImportEdge> edges = HashObjObjMaps.newMutableMap();
 
@@ -41,6 +43,9 @@ public class AuthorCoAuthorGraph {
             for (String attrKey : dblpElement.attributes.keySet()) {
                 dblpElement.attributes.get(attrKey)
                         .forEach(attribute -> props.set(attrKey, attribute));
+            }
+            if(dblpElement.title != null && !dblpElement.title.isEmpty()) {
+                props.set(PROP_TITLE, PropertyValue.create(dblpElement.title));
             }
             publicationVertex.setProperties(props);
             vertices.put(dblpElement.key, publicationVertex);

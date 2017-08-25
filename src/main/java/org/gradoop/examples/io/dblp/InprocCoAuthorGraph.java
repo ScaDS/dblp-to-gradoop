@@ -7,6 +7,7 @@ import org.dblp.datastructures.DblpElementType;
 import org.dblp.parser.DblpElementProcessor;
 import org.dblp.parser.DblpParser;
 import org.gradoop.common.model.impl.properties.Properties;
+import org.gradoop.common.model.impl.properties.PropertyValue;
 import org.gradoop.examples.io.dblp.callback.FilterDblpProcessor;
 import org.gradoop.examples.io.dblp.callback.SimpleDblpProcessor;
 import org.gradoop.flink.io.impl.graph.tuples.ImportEdge;
@@ -24,6 +25,7 @@ public class InprocCoAuthorGraph {
     private final String EDGE_LABEL_COAUTHOR = "coauthor";
     private final String EDGE_LABEL_AUTHOR = "authorof";
     private final String EDGE_PROPERTY_COLABS = "colaborations";
+    private final String PROP_TITLE = "title";
 
     private HashObjObjMap<String, ImportVertex> vertices = HashObjObjMaps.newMutableMap();
     private HashObjObjMap<String, ImportEdge> edges = HashObjObjMaps.newMutableMap();
@@ -47,6 +49,9 @@ public class InprocCoAuthorGraph {
             for (String attrKey : dblpElement.attributes.keySet()) {
                 dblpElement.attributes.get(attrKey)
                         .forEach(attribute -> props.set(attrKey, attribute));
+            }
+            if(dblpElement.title != null && !dblpElement.title.isEmpty()) {
+                props.set(PROP_TITLE, PropertyValue.create(dblpElement.title));
             }
             publicationVertex.setProperties(props);
             vertices.put(dblpElement.key, publicationVertex);

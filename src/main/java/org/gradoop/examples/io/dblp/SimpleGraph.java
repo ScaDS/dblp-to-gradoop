@@ -5,6 +5,7 @@ import com.koloboke.collect.map.hash.HashObjObjMaps;
 import org.dblp.datastructures.DblpElement;
 import org.dblp.parser.DblpParser;
 import org.gradoop.common.model.impl.properties.Properties;
+import org.gradoop.common.model.impl.properties.PropertyValue;
 import org.gradoop.examples.io.dblp.callback.SimpleDblpProcessor;
 import org.gradoop.flink.io.impl.graph.tuples.ImportEdge;
 import org.gradoop.flink.io.impl.graph.tuples.ImportVertex;
@@ -14,6 +15,7 @@ import java.util.List;
 public class SimpleGraph {
     private final String LABEL_AUTHOR = "author";
     private final String LABEL_AUTHOR_NAME = "name";
+    private final String PROP_TITLE = "title";
 
     private HashObjObjMap<String, ImportVertex> vertices = HashObjObjMaps.newMutableMap();
     private HashObjObjMap<String, ImportEdge> edges = HashObjObjMaps.newMutableMap();
@@ -37,6 +39,7 @@ public class SimpleGraph {
                 dblpElement.attributes.get(attrKey)
                         .forEach(attribute -> props.set(attrKey, attribute));
             }
+            props.set(PROP_TITLE, PropertyValue.create(dblpElement.title));
             publicationVertex.setProperties(props);
             vertices.put(dblpElement.key, publicationVertex);
 
