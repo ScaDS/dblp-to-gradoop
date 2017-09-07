@@ -16,8 +16,7 @@ import org.gradoop.flink.util.GradoopFlinkConfig;
  * Simple shared utility functions.
  */
 public class GraphCreationHelper {
-    public static void writeGraph(HashObjObjMap<String, ImportVertex> vertices, HashObjObjMap<String, ImportEdge> edges,
-                                  String graphHeadPath, String vertexPath, String edgePath) throws Exception {
+    public static void writeGraph(HashObjObjMap<String, ImportVertex> vertices, HashObjObjMap<String, ImportEdge> edges, String outPath) throws Exception {
         // translate to flink datastructures
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
@@ -35,7 +34,7 @@ public class GraphCreationHelper {
         // read logical graph
         LogicalGraph logicalGraph = gds.getLogicalGraph();
 
-        DataSink ds = new JSONDataSink(graphHeadPath, vertexPath, edgePath, config);
+        DataSink ds = new JSONDataSink(outPath, config);
         ds.write(logicalGraph, true);
 
         env.execute();

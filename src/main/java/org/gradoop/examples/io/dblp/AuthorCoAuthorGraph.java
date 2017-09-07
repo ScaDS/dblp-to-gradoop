@@ -96,7 +96,7 @@ public class AuthorCoAuthorGraph {
     }
 
     private void writeGraph(String outputPath) throws Exception {
-        GraphCreationHelper.writeGraph(vertices, edges, outputPath + "graphHead",outputPath + "vertices", outputPath + "edges");
+        GraphCreationHelper.writeGraph(vertices, edges, outputPath);
     }
 
     public static void main(String[] args) throws Exception {

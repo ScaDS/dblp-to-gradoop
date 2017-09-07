@@ -75,13 +75,13 @@ public class CoAuthorGraph  {
     }
 
 
-    private void writeGraph(String graphHeadPath, String vertexPath, String edgePath) throws Exception {
-        GraphCreationHelper.writeGraph(vertices, edges, graphHeadPath, vertexPath, edgePath);
+    private void writeGraph(String outPath) throws Exception {
+        GraphCreationHelper.writeGraph(vertices, edges, outPath);
     }
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length < 5) {
+        if (args.length < 3) {
             System.out.println(
                     "Parameters: PathToDblpFile NumElementsToParse OutputPath_Head OutputPath_Vertices OutputPath_Edges "
                     + "[Publication Types (INPROCEEDINGS, PROCEEDINGS, ARTICLE, INCOLLECTION, WEBSITE, BOOK)]");
@@ -91,7 +91,7 @@ public class CoAuthorGraph  {
         }
 
         Set<DblpElementType> publicationTypes;
-        if(args.length > 5) {
+        if(args.length > 3) {
             publicationTypes = new HashSet<>();
             for(String pubType : Arrays.copyOfRange(args, 5, args.length)) {
                 publicationTypes.add(DblpElementType.valueOf(pubType));
@@ -116,6 +116,6 @@ public class CoAuthorGraph  {
                 .forEach(graphCreator::createGraphStructure);
 
 
-        graphCreator.writeGraph(args[2], args[3], args[4]);
+        graphCreator.writeGraph(args[2]);
     }
 }

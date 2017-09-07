@@ -68,15 +68,15 @@ public class SimpleGraph {
         }
     }
 
-    private void writeGraph(String graphHeadPath, String vertexPath, String edgePath) throws Exception {
-        GraphCreationHelper.writeGraph(vertices, edges, graphHeadPath, vertexPath, edgePath);
+    private void writeGraph(String outPath) throws Exception {
+        GraphCreationHelper.writeGraph(vertices, edges, outPath);
     }
 
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length != 5) {
-            System.out.println("Parameters: PathToDblpFile ElementsToParse OutputPath_Head OutputPath_Vertices, OutputPath_Edges");
+        if (args.length != 3) {
+            System.out.println("Parameters: PathToDblpFile ElementsToParse OutputPath");
             System.exit(0);
         }
 
@@ -95,6 +95,6 @@ public class SimpleGraph {
                 .forEach(dblp::createGraphStructure);
 
 
-        dblp.writeGraph(args[2], args[3], args[4]);
+        dblp.writeGraph(args[2]);
     }
 }

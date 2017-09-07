@@ -97,13 +97,13 @@ public class InprocCoAuthorGraph {
     }
 
 
-    private void writeGraph(String graphHeadPath, String vertexPath, String edgePath) throws Exception {
-        GraphCreationHelper.writeGraph(vertices, edges, graphHeadPath, vertexPath, edgePath);
+    private void writeGraph(String outPath) throws Exception {
+        GraphCreationHelper.writeGraph(vertices, edges, outPath);
     }
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length < 5) {
+        if (args.length < 3) {
             System.out.println(
                     "Parameters: PathToDblpFile NumElementsToParse OutputPath_Head OutputPath_Vertices OutputPath_Edges "
                     + "[Conference List (substring check)]");
@@ -113,7 +113,7 @@ public class InprocCoAuthorGraph {
         }
 
         List<String> conferences = new ArrayList<>();
-        if(args.length > 5) {
+        if(args.length > 3) {
             Collections.addAll(conferences, Arrays.copyOfRange(args, 5, args.length));
         }
         System.out.println("Conferences: " + conferences);
@@ -126,6 +126,6 @@ public class InprocCoAuthorGraph {
 
         // filter data which we don't want to add, e.g. no authors included etc.
         dblpElements.forEach(graphCreator::createGraphStructure);
-        graphCreator.writeGraph(args[2], args[3], args[4]);
+        graphCreator.writeGraph(args[2]);
     }
 }

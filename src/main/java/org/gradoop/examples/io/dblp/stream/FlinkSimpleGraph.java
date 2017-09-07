@@ -39,6 +39,7 @@ public class FlinkSimpleGraph {
                 .filter(ele -> ele.authors.size() != 0)
                 .filter(ele -> ele.title != null && !ele.title.equals(""))
                 .map(DblpImportElement::fromElement).collect(Collectors.toCollection(ArrayList::new));
+        System.out.println("Prepared Elements: "+elementsIt.size());
         DataSet<DblpImportElement> elements = env.fromCollection(elementsIt);
         DataSet<ImportEdge<String>> edges = elements.flatMap(new DblpElementToEdge());
         DataSet<ImportVertex<String>> vertices = elements.flatMap(new DblpElementToVertex());
